@@ -53,7 +53,7 @@ function gutenberg_apply_block_supports( $block_content, $block ) {
 
 	// Suppress warnings from this method from polluting the front-end.
 	// @codingStandardsIgnoreStart
-	if ( ! @$dom->loadHTML( mb_convert_encoding( $block_content, 'HTML-ENTITIES', 'UTF-8' ), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_COMPACT ) ) {
+	if ( ! @$dom->loadHTML( mb_convert_encoding( gutenberg_block_support_add_encode( $block_content ), 'HTML-ENTITIES', 'UTF-8' ), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_COMPACT ) ) {
 	// @codingStandardsIgnoreEnd
 		return $block_content;
 	}
@@ -86,6 +86,16 @@ function gutenberg_apply_block_supports( $block_content, $block ) {
 		$block_root->setAttribute( 'style', $new_styles );
 	}
 
-	return mb_convert_encoding( $dom->saveHtml(), 'UTF-8', 'HTML-ENTITIES' );
+	return gutenberg_block_support_remove_encode( mb_convert_encoding( $dom->saveHtml(), 'UTF-8', 'HTML-ENTITIES' ) );
 }
 add_filter( 'render_block', 'gutenberg_apply_block_supports', 10, 2 );
+
+function gutenberg_block_support_add_encode( $str ) {
+	return preg_replace("/&([^;]+);/", '&:$1;', $str);
+}
+function gutenberg_block_support_remove_encode( $str ) {
+	return preg_replace("/&:([^;]+);/", '&$1;', $str);
+}
+
+
+
